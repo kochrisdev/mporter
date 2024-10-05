@@ -1,29 +1,25 @@
 import streamlit as st
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import numpy as np
 
 def create_radar_chart(values):
     categories = ['Threat of New Entrants', 'Bargaining Power of Suppliers',
                   'Bargaining Power of Buyers', 'Threat of Substitute Products',
                   'Rivalry Among Existing Competitors']
     
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatterpolar(
-        r=values,
-        theta=categories,
-        fill='toself',
-        name='Industry Forces'
-    ))
-
-    fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 5]
-            )),
-        showlegend=False
-    )
-
+    angles = np.linspace(0, 2*np.pi, len(categories), endpoint=False)
+    values = np.concatenate((values, [values[0]]))  # repeat the first value to close the polygon
+    angles = np.concatenate((angles, [angles[0]]))  # repeat the first angle to close the polygon
+    
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(projection='polar'))
+    ax.plot(angles, values)
+    ax.fill(angles, values, alpha=0.3)
+    ax.set_thetagrids(angles[:-1] * 180/np.pi, categories)
+    ax.set_ylim(0, 5)
+    ax.set_yticks(np.arange(1, 6))
+    ax.set_yticklabels(['1', '2', '3', '4', '5'])
+    ax.set_rlabel_position(0)
+    
     return fig
 
 st.title("Michael Porter's Five Competitive Forces")
@@ -43,7 +39,7 @@ rivalry = st.slider("Rivalry Among Existing Competitors", 0, 5, 3)
 values = [new_entrants, supplier_power, buyer_power, substitutes, rivalry]
 
 fig = create_radar_chart(values)
-st.plotly_chart(fig)
+st.pyplot(fig)
 
 st.write("""
 Interpretation:
